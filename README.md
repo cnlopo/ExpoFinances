@@ -1,6 +1,6 @@
 # ExpoFinances - Organizador Financeiro
 
-🛠️ App em React Native + ExpoGo
+🛠️ App em React Native + ExpoGo  
 👨‍💻 Breno Henrique Ninin | Pedro Marques da Cruz | Rafael Lopo Montalvão
 
 Este foi um projeto realizado durante o primeiro semestre de 2026 na matéria extensionista "Programação Para Dispositivos Móveis em Android" ministrada pelo professor Omar Sacilotto Donaires pelos alunos Breno Henrique Ninin, Pedro Marques da Cruz e Rafael Lopo Montalvão. A matéria extensionista tem objetivo de através de um projeto baseado nos conteúdos ensinados durante o semestre realizar a extensão entre alunos da faculdade e a comunidade.
@@ -101,13 +101,13 @@ navegação entre páginas e criação do banco de dados, dificuldades essas que
 Portanto com base nos percalços enfrentados criamos diagramas que auxíliam na 
 compreensão de como se estruturou o projeto e o aplicativo:
 
-Estrutura Analítica do Projeto (ERP)
+Estrutura Analítica do Projeto (ERP)  
 ![Estrutura Analítica do Projeto](images/erp.png)
 
-Diagrama de casos de uso do sistema
+Diagrama de casos de uso do sistema  
 ![Diagrama de casos de uso do sistema](images/casos-de-uso.png)
 
-Diagrama de blocos da arquitetura
+Diagrama de blocos da arquitetura  
 ![Diagrama de blocos da arquitetura](images/blocos-de-arq.png)
 
 O contato com a parte interessada se deu através de uma apresentação inicial do projeto
@@ -115,7 +115,7 @@ ainda na concepção da ideia para entender a sua viabilidade. Posteriormente ao
 
 Veja a seguir o resultado do aplicativo:
 
-Tela de início do aplicativo
+Tela de início do aplicativo  
 ![Tela de início](images/tela-inicio.png)
 
 A tela inicial foi desenvolvida com o objetivo de apresentar ao usuário um resumo geral 
@@ -128,7 +128,7 @@ Essa tela atende principalmente aos seguintes requisitos funcionais:
 - Apresentar indicadores financeiros calculados a partir dos dados cadastrados;
 - Facilitar o acompanhamento mensal das movimentações financeiras.
 
-Tela de registro
+Tela de registro  
 ![Tela de registro](images/tela-registro.png)
 
 A tela de registro constitui o módulo responsável pelo gerenciamento das movimentações 
@@ -145,7 +145,7 @@ Esta tela atende aos seguintes requisitos:
 - Exclusão de registros;
 - Armazenamento permanente das informações em banco de dados local.
 
-Tela de relatórios
+Tela de relatórios  
 ![Tela de relatórios](images/tela-relatorios.png)
 
 A tela de relatórios foi desenvolvida para proporcionar ao usuário uma análise gráfica de 
@@ -167,19 +167,19 @@ responsável por armazenar as receitas, despesas e categorias cadastradas. Para 
 Os principais trechos do código apresentados correspondem à criação da conexão com o 
 banco de dados, ao cadastro, consulta e exclusão de registros financeiros, além da atualização automática da interface e geração dos gráficos financeiros. Esses componentes representam a base do funcionamento do aplicativo ExpoFinances.
 
-Utilização do useState
+Utilização do useState  
 ![Utilização do useState](images/usestate.png)
 
-Estrutura base do banco de dados
+Estrutura base do banco de dados  
 ![Estrutura base do banco de dados](images/estrutura-banco-de-dados.png)
 
-Utilização do DELETE para apagar registros
+Utilização do DELETE para apagar registros  
 ![Utilização do DELETE para apagar registros](images/utilizacao-delete.png)
 
-Utilização do INSERT para preencher as tabelas com os dados e SELECT para retornar todas as linhas e colunas da tabela registros
+Utilização do INSERT para preencher as tabelas com os dados e SELECT para retornar todas as linhas e colunas da tabela registros  
 ![Utilização do INSERT para preencher as tabelas com os dados e SELECT para retornar todas as linhas e colunas da tabela registros](images/utilizacao-insert-select.png)
 
-Utilização do useFocusEffect para recarregar as informações ao retornar à tela
+Utilização do useFocusEffect para recarregar as informações ao retornar à tela  
 ![Utilização do useFocusEffect para recarregar as informações ao retornar à tela](images/usefocuseffect.png)
 
 Foram realizados testes individuais em cada módulo do aplicativo durante o 
@@ -196,12 +196,12 @@ definidos no projeto. Durante essa etapa, foi confirmado que o sistema permite o
 Após a conclusão do desenvolvimento do aplicativo, o ExpoFinances foi apresentado aos 
 participantes do projeto para avaliação de suas funcionalidades. Durante a apresentação por vídeo os usuários puderam ver o funcionamento do aplicativo e fornecer opiniões sobre sua utilização, organização das telas e facilidade de uso. De modo geral, o feedback recebido foi positivo, destacando a simplicidade da interface, a praticidade no registro das movimentações financeiras e a facilidade de visualização dos gráficos e resumos. As sugestões apresentadas pelos participantes foram registradas e consideradas para futuras melhorias da aplicação. Segue abaixo algumas evidências das avaliações recebidas:
 
-Isabelly (21 anos, estudante de Fisioterapia na UNIP):
+Isabelly (21 anos, estudante de Fisioterapia na UNIP):  
 “Adorei a ideia, me ajudaria muito. Eu tenho um salário fixo no mês mas eu guardo dinheiro em um banco e esse banco ele me rende 115%. Eu acho que seria legar pensar nessa parte sobre o rendimento do dinheiro porque a gente tem que saber quanto sai e tem que saber quanto entra mas eu também acho que a gente tem que saber quanto rende porquê se você é uma pessoa que investe um aplicativo fora do banco para mostrar seria interessante.” 
 “Eu super gosto dessa ideia de verdade porque pessoas como eu, super bagunçadas financeiramente, isso iria ajudar muito pois o banco mostra quanto saiu e quanto entrou mas as vezes não dá para você ter o controle porque lá não mostra o total, depois que você tirou um pedaço acabou.”
 (Isabelly, 2026, transcrição adaptada pelo autor).
 
-Jonas (21 anos, estudante de Ciência da Computação na Estácio):
+Jonas (21 anos, estudante de Ciência da Computação na Estácio):  
 “O app ficou muito bem desenvolvido, gostei muito da integração do banco de dados, da possibilidade de registrar tanto despesas fixas como principalmente as variáveis que talvez são as mais importantes porque são coisas que vão entrando e vão saindo. Os gráficos mesmo que em um formato mais simples ficaram muito claros de entender a questão para você interpretar os dados. O layout ficou bem claro, bem nítido e descorre bem o significado do aplicativo que é de ser um auxiliador financeiro. Ficou muito bom e tem muito para melhorar, como dito no vídeo que é uma versão inicial, tem muito potencial futuro. Parabéns pela iniciativa e pelo projeto.”
 (Jonas, 2026, transcrição adaptada pelo autor).
 
