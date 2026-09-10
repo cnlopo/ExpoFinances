@@ -3,7 +3,7 @@
 🛠️ App em React Native + ExpoGo  
 👨‍💻 Breno Henrique Ninin | Pedro Marques da Cruz | Rafael Lopo Montalvão
 
-Este foi um projeto realizado durante o primeiro semestre de 2026 na matéria extensionista "Programação Para Dispositivos Móveis em Android" ministrada pelo professor Omar Sacilotto Donaires pelos alunos Breno Henrique Ninin, Pedro Marques da Cruz e Rafael Lopo Montalvão. A matéria extensionista tem objetivo de através de um projeto baseado nos conteúdos ensinados durante o semestre realizar a extensão entre alunos da faculdade e a comunidade.
+Este foi um projeto executado durante o primeiro semestre de 2026 na matéria extensionista "Programação Para Dispositivos Móveis em Android" ministrada pelo professor Omar Sacilotto Donaires e realizado pelos alunos Breno Henrique Ninin, Pedro Marques da Cruz e Rafael Lopo Montalvão. A matéria extensionista tem objetivo de através de um projeto baseado nos conteúdos ensinados durante o semestre realizar a extensão entre alunos da faculdade e a comunidade.
 O projeto rendeu muitos aprendizados para os membros do grupo e todos passaram com nota máxima na matéria. Após o término do semestre o grupo tem intenção de continuar trabalhando no projeto para fins de estudo, uso pessoal e disponibilização do app para pessoas que tenham interesse.
 
 # Identificação das partes interessadas e parceiros
@@ -132,7 +132,7 @@ Tela de registro
 ![Tela de registro](images/tela-registro.png)
 
 A tela de registro constitui o módulo responsável pelo gerenciamento das movimentações 
-financeiras do aplicativo. Nela o suuário pode cadastrar receitas, gastos fixos e gastos variáveis por meio de um formulário simples e intuitivo.
+financeiras do aplicativo. Nela o usuário pode cadastrar receitas, gastos fixos e gastos variáveis por meio de um formulário simples e intuitivo.
 Durante o cadastro, o usuário informa a descrição e o valor da movimentação. Para 
 despesas, também é possível selecionar uma categoria previamente definida, como Alimentação, Transporte, Moradia, Saúde, Lazer ou Outros, permitindo maior organização dos dados e geração de relatórios mais detalhados.
 Após o salvamento, as informações são armazenadas localmente utilizando SQLite e 
