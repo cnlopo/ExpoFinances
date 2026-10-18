@@ -80,8 +80,27 @@ function Tabs() {
                 fontFamily: 'Inter_400Regular',
                 fontSize: 12,
                 },
-                tabBarIcon:({color, size}) => {
-                return <Ionicons name="add-circle" size={size*1.2} color={'black'} style={{ marginTop: -2, marginLeft: -2,}}/>
+                tabBarIcon:({focused, size}) => {
+                    return ( 
+                        <View 
+                            style={{
+                                width: size * 1.2,
+                                height: size *1.2,
+                                borderRadius: 50,
+                                backgroundColor: focused ? 'black' : 'white',
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                margintTop: -2,
+                                marginLeft: -2, 
+                            }}
+                        >
+                            <Ionicons
+                                name='add'
+                                size={size}
+                                color={focused ? 'white' : 'black'}
+                            />
+                        </View>
+                    );
                 }
             }}
             ></Tab.Screen>
