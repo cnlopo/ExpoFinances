@@ -16,6 +16,9 @@ const Stack = createNativeStackNavigator();
 function Tabs() {
     return (
         <Tab.Navigator
+
+            initialRouteName='Inicio'
+
             screenOptions={({ navigation }) => ({
                 headerShadowVisible: true,
 
@@ -27,16 +30,6 @@ function Tabs() {
                 ),
 
                 headerTitleAlign: 'center',
-
-                headerLeft: () => (
-                    <TouchableOpacity
-                        onPress={() => navigation.navigate('Inicio')}
-                        style={{
-                            marginLeft: 30,
-                        }}
-                    ><Entypo name="home" size={24}/>
-                    </TouchableOpacity>
-                ),
 
                 headerStyle: {
                     height: 75,
@@ -60,17 +53,6 @@ function Tabs() {
                 }
             })}
         >
-            <Tab.Screen
-                name="Inicio"
-                component={Inicio}
-                options={{
-                    href: null,
-
-                    tabBarItemStyle: {
-                        display: 'none',
-                    }
-                }}
-            />
             <Tab.Screen
             name="Registro"
             component={Registro}
@@ -103,7 +85,28 @@ function Tabs() {
                     );
                 }
             }}
-            ></Tab.Screen>
+            />
+
+            <Tab.Screen
+                name="Inicio"
+                component={Inicio}
+                options={{
+                    tabBarLabel: 'Início',
+                    tabBarLabelStyle: {
+                        fontFamily:'Inter_400Regular',
+                        fontSize: 12,
+                    },
+                    tabBarIcon: ({ focused, size }) => (
+                        <Ionicons
+                            name='home'
+                            size={28}
+                            color={focused ? '#000' : '#888'}
+
+                        />
+                    ) 
+                }}
+            />
+
             <Tab.Screen
             name="Relatorio"
             component={Relatorio}
@@ -114,7 +117,7 @@ function Tabs() {
                 fontSize: 12,
                 },
                 tabBarIcon:({color, size}) => {
-                return <Entypo name="circular-graph" size={size} color={color}/>
+                    return <Entypo name="circular-graph" size={size} color={color}/>
                 }
             }}
             ></Tab.Screen>
