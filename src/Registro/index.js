@@ -2,14 +2,16 @@ import { useState, useEffect } from 'react';
 import { View, Text, Platform, StyleSheet, TextInput, TouchableOpacity, FlatList, ScrollView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import db from '../database/database';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 export default function Registro() {
     const [descricao, setDescricao] = useState('');
     const [valor, setValor] = useState('');
     const [tipo, setTipo] = useState('variavel');
     const [categoria, setCategoria] = useState('Outros');
-
     const [registros, setRegistros] = useState([]);
+    const [dataSelecionada, setDataSelecionada] = useState(new Date());
+    const [mostrarData, setMostrarData] = useState(false);
 
     function carregarRegistros() {
 
@@ -62,14 +64,19 @@ export default function Registro() {
 
         db.runSync(
             `INSERT INTO registros
-(id, descricao, valor, tipo, categoria)
-VALUES (?, ?, ?, ?, ?)`,
+            (id, descricao, valor, tipo, categoria, data_registro)
+            VALUES (?, ?, ?, ?, ?, ?)`,
             [
                 novoRegistro.id,
                 novoRegistro.descricao,
                 novoRegistro.valor,
                 novoRegistro.tipo,
                 novoRegistro.categoria,
+                `${dataSelecionada.getFullYear()}-${String(
+                    dataSelecionada.getMonth() + 1
+                ).padStart(2, '0')}-${String(
+                    dataSelecionada.getDate()
+                ).padStart(2, '0')}`,
             ]
         );
 
@@ -83,6 +90,7 @@ VALUES (?, ?, ?, ?, ?)`,
 
         setDescricao('');
         setValor('');
+        setDataSelecionada(new Date());
     }
 
     function apagarRegistro(id) {
@@ -284,6 +292,30 @@ VALUES (?, ?, ?, ?, ?)`,
             />
 
             <TouchableOpacity
+                style={styles.input}
+                onPress={() => setMostrarData(true)}
+            >
+                <Text>
+                    Data: {dataSelecionada.toLocaleDateString('pt-BR')}
+                </Text>
+            </TouchableOpacity>
+
+            {mostrarData && (
+                <DateTimePicker
+                    value={dataSelecionada}
+                    mode="date"
+                    display="default"
+                    onChange={(event, data) => {
+                        setMostrarData(false);
+
+                        if (data) {
+                            setDataSelecionada(data);
+                        }
+                    }}
+                />
+            )}
+
+            <TouchableOpacity
                 style={styles.botao}
                 onPress={salvarRegistro}
             >
@@ -291,10 +323,6 @@ VALUES (?, ?, ?, ?, ?)`,
                     Salvar
                 </Text>
             </TouchableOpacity>
-
-            <Text style={styles.subtitulo}>
-                Receitas
-            </Text>
 
             {receitasLista.length === 0 && (
                 <Text style={styles.vazio}>

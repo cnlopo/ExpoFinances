@@ -9,21 +9,22 @@ export default function Inicio() {
 
     const dataAtual = new Date();
 
-    const mesAtual = dataAtual.toLocaleDateString(
-        'pt-BR',
-        {
-            month: 'long',
-            year: 'numeric',
-        }
-    );
+    const [mesSelecionado, setMesSelecionado] = useState(dataAtual.getMonth());
+    const [anoSelecionado, setAnoSelecionado] = useState(dataAtual.getFullYear());
 
     const [receitas, setReceitas] = useState(0);
     const [gastosFixos, setGastosFixos] = useState(0);
     const [gastosVariaveis, setGastosVariaveis] = useState(0);
     const [saldo, setSaldo] = useState(0);
-    function carregarDados() {
+
+    function carregarDados(mes, ano) {
+        const mesFormatado = String(mes + 1).padStart(2, '0');
+        const periodo = `${ano}-${mesFormatado}`;
+
         const registros = db.getAllSync(
-            'SELECT * FROM registros'
+            `SELECT * FROM registros
+            WHERE substr(data_registro, 1, 7) = ?`,
+            periodo
         );
 
         const totalReceitas = registros
@@ -50,8 +51,8 @@ export default function Inicio() {
 
     useFocusEffect(
         useCallback(() => {
-            carregarDados();
-        }, [])
+            carregarDados(mesSelecionado, anoSelecionado);
+        }, [mesSelecionado, anoSelecionado])
     );
 
     const percentualDespesas =
@@ -75,15 +76,16 @@ export default function Inicio() {
                 ].map((mes, index) => (
                     <TouchableOpacity
                         key={mes}
+                        onPress={() => setMesSelecionado(index)}
                         style={
-                            index === new Date().getMonth()
+                            index === mesSelecionado
                                 ? styles.botoesAtivo
                                 : styles.botoes
                         }
                     >
                         <Text
                             style={
-                                index === new Date().getMonth()
+                                index === mesSelecionado
                                     ? styles.botoesTextoAtivo
                                     : styles.botoesTexto
                             }
@@ -92,6 +94,7 @@ export default function Inicio() {
                         </Text>
                     </TouchableOpacity>
                 ))}
+                
             </ScrollView>
             <View style={styles.card}>
                 <Text style={styles.texto}>Receitas:</Text>
