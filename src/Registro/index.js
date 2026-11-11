@@ -291,15 +291,37 @@ export default function Registro() {
                 }
             />
 
-            <TouchableOpacity
-                style={styles.input}
-                onPress={() => setMostrarData(true)}
-            >
-                <Text>
-                    Data: {dataSelecionada.toLocaleDateString('pt-BR')}
+            <View style={styles.dateContainer}>
+                <Text style={styles.dateLabel}>Data do registro</Text>
+            
+                <Text style={styles.dateHint}>
+                    Selecione quando esse lançamento aconteceu ou acontecerá.
                 </Text>
-            </TouchableOpacity>
 
+                <TouchableOpacity
+                    style={styles.dateInput}
+                    onPress={() => setMostrarData(true)}
+                >
+
+                    <Ionicons
+                        name="calendar-outline"
+                        size={22}
+                        color="#555"
+                    />
+
+                    <Text style={styles.dateText}>
+                        {dataSelecionada.toLocaleDateString('pt-BR')}
+                    </Text>
+
+                    <Ionicons
+                        name="chevron-down"
+                        size={20}
+                        color="#888"
+                    />
+
+                </TouchableOpacity>
+            </View>
+            
             {mostrarData && (
                 <DateTimePicker
                     value={dataSelecionada}
@@ -442,6 +464,41 @@ const styles = StyleSheet.create({
         backgroundColor: 'white',
         padding: 20,
         paddingTop: 20,
+    },
+
+    dateContainer: {
+        marginBottom: 15,
+    },
+
+    dateLabel: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: '#333',
+        marginBottom: 5,
+    },
+
+    dateHint: {
+        fontSize: 12,
+        color: '#888',
+        marginBottom: 10,
+    },
+
+    dateInput: {
+        backgroundColor: 'white',
+        borderWidth: 2,
+        borderColor: '#E0E0E0',
+        padding: 15,
+        borderRadius: 12,
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+    },
+
+    dateText: {
+        flex: 1,
+        marginLeft: 12,
+        fontSize: 15,
+        color: '#333',
     },
 
     titulo: {
