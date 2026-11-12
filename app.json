@@ -15,7 +15,8 @@
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
-      }
+      },
+      "package": "com.vysyonnary.ExpoFinances"
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -25,6 +26,11 @@
       "expo-sqlite",
       "expo-status-bar",
       "@react-native-community/datetimepicker"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "78191d50-a33a-428d-ba7e-d6922f2c59a5"
+      }
+    }
   }
 }
