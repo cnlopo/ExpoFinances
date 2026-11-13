@@ -1,10 +1,33 @@
 import { Dimensions, View, Text, StyleSheet, ScrollView } from "react-native";
 import { PieChart } from "react-native-chart-kit";
-import { useState, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import db from '../database/database';
+import { useState, useCallback, useContext } from 'react';
+import { PeriodoContext } from '../PeriodoContext';
+
+const nomesMeses = [
+    'Janeiro',
+    'Fevereiro',
+    'Março',
+    'Abril',
+    'Maio',
+    'Junho',
+    'Julho',
+    'Agosto',
+    'Setembro',
+    'Outubro',
+    'Novembro',
+    'Dezembro'
+];
 
 export default function Grafico() {
+
+    const {
+        mesSelecionado,
+        anoSelecionado
+    } = useContext(PeriodoContext);
+
+    const nomeMes = nomesMeses[mesSelecionado];
 
     const [gastosFixos, setGastosFixos] = useState(0);
     const [gastosVariaveis, setGastosVariaveis] = useState(0);
@@ -18,15 +41,20 @@ export default function Grafico() {
 
     function carregarDados() {
 
+        const mesFormatado = String(mesSelecionado + 1).padStart(2, '0');
+        const periodo = `${anoSelecionado}-${mesFormatado}`;
+
         const registros = db.getAllSync(
-            'SELECT * FROM registros'
+            `SELECT * FROM registros
+            WHERE substr(data_registro, 1, 7) = ?`,
+            periodo
         );
 
         const gastos = registros.filter(
             item =>
                 item.tipo === 'fixo' ||
                 item.tipo === 'variavel'
-        );
+            );
 
         setAlimentacao(
             gastos
@@ -84,7 +112,7 @@ export default function Grafico() {
     useFocusEffect(
         useCallback(() => {
             carregarDados();
-        }, [])
+        }, [mesSelecionado, anoSelecionado])
     );
 
     const datagrafico1 = [
@@ -177,57 +205,69 @@ export default function Grafico() {
         <ScrollView>
             <View style={styles.container}>
 
-            <View style={styles.card}>
-                <Text style={styles.titulo}>Distribuição da Renda</Text>
+                <View style={styles.cabecalhoRelatorio}>
+                    <Text style={styles.tituloRelatorio}>
+                        Relatório Financeiro
+                    </Text>
 
-                <PieChart
-                    data={datagrafico1}
-                    width={Dimensions.get("window").width - 40}
-                    height={150}
-                    chartConfig={{
-                        color: () => "#000",
-                    }}
-                    accessor={"population"}
-                    backgroundColor={"transparent"}
-                    hasLegend={true}
-                />
+                    <Text style={styles.subtituloRelatorio}>
+                        {nomeMes} de {anoSelecionado}
+                    </Text>
+                </View>
+
+
+                <View style={styles.card}>
+                    <Text style={styles.titulo}>Distribuição da Renda</Text>
+
+                    <PieChart
+                        data={datagrafico1}
+                        width={Dimensions.get("window").width - 40}
+                        height={150}
+                        chartConfig={{
+                            color: () => "#000",
+                        }}
+                        accessor={"population"}
+                        backgroundColor={"transparent"}
+                        hasLegend={true}
+                    />
+                </View>
+
+                <View style={styles.card}>
+                    <Text style={styles.titulo}>Saídas por Categorias</Text>
+
+                    <PieChart
+                        data={datagrafico2}
+                        width={Dimensions.get("window").width - 40}
+                        height={150}
+                        chartConfig={{
+                            color: () => "#000",
+                        }}
+                        accessor={"population"}
+                        backgroundColor={"transparent"}
+                        hasLegend={true}
+                    />
+                </View>
+
+                <View style={styles.card}>
+                    <Text style={styles.titulo}>Fluxo Financeiro</Text>
+
+                    <PieChart
+                        data={datagrafico3}
+                        width={Dimensions.get("window").width - 40}
+                        height={140}
+                        chartConfig={{
+                            color: () => "#000",
+                        }}
+                        accessor={"valor"}
+                        backgroundColor={"transparent"}
+                        paddingLeft={"15"}
+                        hasLegend={true}
+                    />
+                </View>
+
+                <Text></Text>
+                <Text></Text>
             </View>
-            <View style={styles.card}>
-                <Text style={styles.titulo}>Saídas por Categorias</Text>
-
-                <PieChart
-                    data={datagrafico2}
-                    width={Dimensions.get("window").width - 40}
-                    height={150}
-                    chartConfig={{
-                        color: () => "#000",
-                    }}
-                    accessor={"population"}
-                    backgroundColor={"transparent"}
-                    hasLegend={true}
-                />
-            </View>
-
-            <View style={styles.card}>
-                <Text style={styles.titulo}>Fluxo Financeiro</Text>
-
-                <PieChart
-                    data={datagrafico3}
-                    width={Dimensions.get("window").width - 40}
-                    height={140}
-                    chartConfig={{
-                        color: () => "#000",
-                    }}
-                    accessor={"valor"}
-                    backgroundColor={"transparent"}
-                    paddingLeft={"15"}
-                    hasLegend={true}
-                />
-            </View>
-
-            <Text></Text>
-            <Text></Text>
-        </View>
             
         </ScrollView>
         
@@ -235,6 +275,29 @@ export default function Grafico() {
 }
 
 const styles = StyleSheet.create({
+
+    cabecalhoRelatorio: {
+        marginHorizontal: 16,
+        marginTop: 20,
+        marginBottom: 8,
+        alignItems: 'center',
+    },
+
+    tituloRelatorio: {
+        fontFamily: 'Inter_700Bold',
+        fontSize: 22,
+        color: 'black',
+        textAlign: 'center',
+    },
+
+    subtituloRelatorio: {
+        fontFamily: 'Inter_400Regular',
+        fontSize: 15,
+        color: '#777',
+        marginTop: 4,
+        textAlign: 'center',
+    },
+
     container: {
         flex: 1,
         backgroundColor: 'white',

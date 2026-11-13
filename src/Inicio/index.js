@@ -1,21 +1,25 @@
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
 import { Feather, Entypo, MaterialIcons, Octicons } from '@expo/vector-icons';
-import { useState, useCallback } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
 import db from '../database/database';
+import { useState, useCallback, useContext } from 'react';
+import { PeriodoContext } from '../PeriodoContext';
 
 
 export default function Inicio() {
 
-    const dataAtual = new Date();
-
-    const [mesSelecionado, setMesSelecionado] = useState(dataAtual.getMonth());
-    const [anoSelecionado, setAnoSelecionado] = useState(dataAtual.getFullYear());
+    const {
+        mesSelecionado,
+        setMesSelecionado,
+        anoSelecionado,
+        setAnoSelecionado
+    } = useContext(PeriodoContext);
 
     const [receitas, setReceitas] = useState(0);
     const [gastosFixos, setGastosFixos] = useState(0);
     const [gastosVariaveis, setGastosVariaveis] = useState(0);
     const [saldo, setSaldo] = useState(0);
+    const [despesasMes, setDespesasMes] = useState([]);
 
     function carregarDados(mes, ano) {
         const mesFormatado = String(mes + 1).padStart(2, '0');
@@ -26,6 +30,14 @@ export default function Inicio() {
             WHERE substr(data_registro, 1, 7) = ?`,
             periodo
         );
+
+        const despesas = registros.filter(
+            item =>
+                item.tipo === 'fixo' ||
+                item.tipo === 'variavel'
+        );
+
+        setDespesasMes(despesas);
 
         const totalReceitas = registros
             .filter(item => item.tipo === 'receita')
@@ -74,6 +86,7 @@ export default function Inicio() {
                     'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
                     'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'
                 ].map((mes, index) => (
+
                     <TouchableOpacity
                         key={mes}
                         onPress={() => setMesSelecionado(index)}
@@ -131,12 +144,32 @@ export default function Inicio() {
                     Valor disponível
                 </Text>
             </View>
+
             <View style={styles.card}>
-                <View style={styles.emoji}>
-                    <Feather name="clock" size={20} /><Text style={styles.texto}>Contas a pagar:</Text>
-                </View>
-                <Text style={styles.legenda}>• Em desenvolvimento</Text>
+                <Text style={styles.titulo}>Gastos do mês</Text>
+                
+                {despesasMes.length > 0 ? (
+                    despesasMes.map((item) => (
+                        <View key={item.id} style={styles.itemDespesa}>
+                            <Text style={styles.descricaoDespesa}>
+                                {item.descricao}
+                            </Text>
+
+                            <Text style={styles.valorDespesa}>
+                                 {Number(item.valor).toLocaleString('pt-BR', {
+                                    style: 'currency',
+                                    currency: 'BRL'
+                                })}
+                            </Text>
+                        </View>
+                    ))
+                ) : (
+                    <Text style={styles.legenda}>
+                        Nenhum gasto registrado neste mês.
+                    </Text>
+                )}
             </View>
+
             <View style={styles.card}>
                 <View style={styles.emoji}>
                     <Entypo name="credit-card" size={20} /><Text style={styles.texto}>Fatura Cartão de Crédito:</Text>
@@ -161,6 +194,30 @@ export default function Inicio() {
 }
 
 const styles = StyleSheet.create({
+
+    itemDespesa: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: '#E0E0E0',
+    },
+
+    descricaoDespesa: {
+        fontFamily: 'Inter_400Regular',
+        fontSize: 14,
+        color: 'black',
+        flex: 1,
+    },
+
+    valorDespesa: {
+        fontFamily: 'Inter_500Medium',
+        fontSize: 14,
+        color: '#F44336',
+        marginLeft: 10,
+    },
+
     container: {
         flex: 1,
         backgroundColor: 'white',
@@ -228,7 +285,7 @@ const styles = StyleSheet.create({
     titulo: {
         fontFamily: 'Inter_600SemiBold',
         color: 'black',
-        fontSize: 28,
+        fontSize: 24,
     },
 
     texto: {

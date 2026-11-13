@@ -2,6 +2,7 @@ import { View, Text, StyleSheet, TouchableOpacity} from 'react-native';
 import { createBottomTabNavigator  } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Feather, Entypo, Ionicons } from '@expo/vector-icons';
+import { PeriodoProvider } from './PeriodoContext';
 
 import Inicio from './Inicio';
 import Plano from './Plano';
@@ -127,16 +128,18 @@ function Tabs() {
 
 export default function Routes() {
     return (
-        <Stack.Navigator
-            screenOptions={{
-                headerShown: false,
-            }}
-        >
-            <Stack.Screen
-            name="Tabs"
-            component={Tabs}
-            />
-        </Stack.Navigator>
+        <PeriodoProvider>
+            <Stack.Navigator
+                screenOptions={{
+                    headerShown: false,
+                }}
+            >
+                <Stack.Screen
+                name="Tabs"
+                component={Tabs}
+                />
+            </Stack.Navigator>
+        </PeriodoProvider>
     );
 }
 
