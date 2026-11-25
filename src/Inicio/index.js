@@ -20,6 +20,7 @@ export default function Inicio() {
     const [gastosVariaveis, setGastosVariaveis] = useState(0);
     const [saldo, setSaldo] = useState(0);
     const [despesasMes, setDespesasMes] = useState([]);
+    const [gastosPorCartao, setGastosPorCartao] = useState([]);
 
     function carregarDados(mes, ano) {
         const mesFormatado = String(mes + 1).padStart(2, '0');
@@ -38,6 +39,24 @@ export default function Inicio() {
         );
 
         setDespesasMes(despesas);
+
+        const resultadoCartoes = db.getAllSync(
+            `SELECT
+                c.id,
+                c.nome,
+                c.ultimos_digitos,
+                SUM(r.valor) AS total
+            FROM registros r
+            INNER JOIN cartoes c
+                ON c.id = r.cartao_id
+            WHERE substr(r.data_registro, 1, 7) = ?
+                AND r.tipo IN ('fixo', 'variavel')
+            GROUP BY c.id, c.nome, c.ultimos_digitos
+            ORDER BY total DESC`,
+            periodo
+        );
+
+        setGastosPorCartao(resultadoCartoes);
 
         const totalReceitas = registros
             .filter(item => item.tipo === 'receita')
@@ -171,22 +190,54 @@ export default function Inicio() {
             </View>
 
             <View style={styles.card}>
+
                 <View style={styles.emoji}>
-                    <Entypo name="credit-card" size={20} /><Text style={styles.texto}>Fatura Cartão de Crédito:</Text>
+                    <Entypo name="credit-card" size={20} />
+
+                    <Text style={styles.texto}>
+                        Fatura cartão de crédito:
+                    </Text>
                 </View>
-                <Text style={styles.legenda}>• Em desenvolvimento</Text>
-            </View>
-            <View style={styles.card}>
-                <View style={styles.emoji}>
-                    <Octicons name="goal" size={20} /><Text style={styles.texto}>Minhas metas:</Text>
-                </View>
-                <Text style={styles.legenda}>• Em desenvolvimento</Text>
-            </View>
-            <View style={styles.card}>
-                <View style={styles.emoji}>
-                    <MaterialIcons name="equalizer" size={20} /><Text style={styles.texto}>Meus limites:</Text>
-                </View>
-                <Text style={styles.legenda}>• Em desenvolvimento</Text>
+
+                {gastosPorCartao.length > 0 ? (
+
+                    gastosPorCartao.map((item) => (
+
+                        <View
+                            key={item.id}
+                            style={styles.itemDespesa}
+                        >
+                            <View style={{ flex: 1 }}>
+
+                                <Text style={styles.descricaoDespesa}>
+                                    {item.nome}
+                                </Text>
+
+                                <Text style={styles.legenda}>
+                                    Final {item.ultimos_digitos}
+                                </Text>
+
+                            </View>
+
+                            <Text style={styles.valorDespesa}>
+                                {Number(item.total).toLocaleString('pt-BR', {
+                                    style: 'currency',
+                                    currency: 'BRL'
+                                })}
+                            </Text>
+
+                        </View>
+
+                    ))
+
+                ) : (
+
+                    <Text style={styles.legenda}>
+                        Nenhum gasto com cartão neste mês.
+                    </Text>
+
+                )}
+
             </View>
         </ScrollView>
 

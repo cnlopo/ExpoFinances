@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { View, Text, Platform, StyleSheet, TextInput, TouchableOpacity, FlatList, ScrollView, Alert } from 'react-native';
+import { View, Text, Modal, Platform, StyleSheet, TextInput, TouchableOpacity, FlatList, ScrollView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import db from '../database/database';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -12,6 +12,12 @@ export default function Registro() {
     const [registros, setRegistros] = useState([]);
     const [dataSelecionada, setDataSelecionada] = useState(new Date());
     const [mostrarData, setMostrarData] = useState(false);
+    const [cartoes, setCartoes] = useState([]);
+    const [nomeCartao, setNomeCartao] = useState('');
+    const [ultimosDigitos, setUltimosDigitos] = useState('');
+    const [mostrarCadastroCartao, setMostrarCadastroCartao] = useState(false);
+    const [modalCartoesVisivel, setModalCartoesVisivel] = useState(false);
+    const [cartaoSelecionado, setCartaoSelecionado] = useState(null);
 
     function carregarRegistros() {
 
@@ -22,10 +28,68 @@ export default function Registro() {
         setRegistros(resultado);
     }
 
+    function carregarCartoes() {
+        const resultado = db.getAllSync(
+            'SELECT * FROM cartoes ORDER BY nome'
+        );
+
+        setCartoes(resultado);
+    }
+
+    function salvarCartao() {
+        if (!nomeCartao.trim()) {
+            Alert.alert('Atenção', 'Informe o nome do cartão.');
+            return;
+        }
+
+        if (ultimosDigitos.length !== 4) {
+            Alert.alert('Atenção', 'Informe os 4 últimos dígitos.');
+            return;
+        }
+
+        const id = Math.random().toString();
+
+        db.runSync(
+            `INSERT INTO cartoes (id, nome, ultimos_digitos)
+            VALUES (?, ?, ?)`,
+            [id, nomeCartao.trim(), ultimosDigitos]
+        );
+
+        setNomeCartao('');
+        setUltimosDigitos('');
+        setMostrarCadastroCartao(false);
+
+        carregarCartoes();
+    }
+
+    function apagarCartao(id) {
+        Alert.alert(
+            'Excluir cartão',
+            'Deseja realmente excluir este cartão?',
+            [
+                {
+                    text: 'Cancelar',
+                    style: 'cancel'
+                },
+                {
+                    text: 'Apagar',
+                    style: 'destructive',
+                    onPress: () => {
+                        db.runSync(
+                            'DELETE FROM cartoes WHERE id = ?',
+                            [id]
+                        );
+
+                        carregarCartoes();
+                    }
+                }
+            ]
+        );
+    }
+
     useEffect(() => {
-
         carregarRegistros();
-
+        carregarCartoes();
     }, []);
 
     function formatarMoeda(valor) {
@@ -64,8 +128,8 @@ export default function Registro() {
 
         db.runSync(
             `INSERT INTO registros
-            (id, descricao, valor, tipo, categoria, data_registro)
-            VALUES (?, ?, ?, ?, ?, ?)`,
+            (id, descricao, valor, tipo, categoria, data_registro, cartao_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [
                 novoRegistro.id,
                 novoRegistro.descricao,
@@ -77,6 +141,7 @@ export default function Registro() {
                 ).padStart(2, '0')}-${String(
                     dataSelecionada.getDate()
                 ).padStart(2, '0')}`,
+                cartaoSelecionado,
             ]
         );
 
@@ -194,7 +259,10 @@ export default function Registro() {
                         tipo === 'receita' &&
                         styles.tipoAtivo,
                     ]}
-                    onPress={() => setTipo('receita')}
+                    onPress={() => {
+                        setTipo('receita');
+                        setCartaoSelecionado(null);
+                    }}
                 >
                     <Text style={styles.tipoTexto}>
                         Receita
@@ -228,46 +296,68 @@ export default function Registro() {
                 </TouchableOpacity>
             </View>
 
+            <TouchableOpacity
+                style={styles.botaoCartoes}
+                onPress={() => {
+                    carregarCartoes();
+                    setModalCartoesVisivel(true);
+                }}
+            >
+                <Ionicons name="card-outline" size={20} color="black" />
+
+                <Text style={styles.textoBotaoCartoes}>
+                    Gerenciar Cartões
+                </Text>
+
+                <Ionicons name="chevron-forward" size={20} color="#888" />
+            </TouchableOpacity>
+
             {tipo !== 'receita' && (
-                <>
+                <View style={{ marginBottom: 15 }}>
                     <Text style={styles.subtitulo}>
-                        Categoria
+                        Cartão (opcional)
                     </Text>
 
                     <ScrollView
                         horizontal
-                        nestedScrollEnabled={true}
                         showsHorizontalScrollIndicator={false}
                         contentContainerStyle={{
                             gap: 8,
-                            paddingHorizontal: 2,
                             paddingBottom: 12,
                         }}
                     >
-                        {[
-                            'Alimentação',
-                            'Transporte',
-                            'Moradia',
-                            'Saúde',
-                            'Lazer',
-                            'Outros'
-                        ].map((item) => (
+                        <TouchableOpacity
+                                    style={[
+                                styles.categoriaBotao,
+                                cartaoSelecionado === null && styles.tipoAtivo,
+                            ]}
+                            onPress={() => setCartaoSelecionado(null)}
+                        >
+                            <Text style={styles.tipoTexto}>
+                                Sem cartão
+                            </Text>
+                        </TouchableOpacity>
+
+                        {cartoes.map((item) => (
                             <TouchableOpacity
-                                key={item}
+                                key={item.id}
                                 style={[
                                     styles.categoriaBotao,
-                                    categoria === item &&
-                                    styles.tipoAtivo,
+                                    cartaoSelecionado === item.id && styles.tipoAtivo,
                                 ]}
-                                onPress={() => setCategoria(item)}
+                                onPress={() => setCartaoSelecionado(item.id)}
                             >
                                 <Text style={styles.tipoTexto}>
-                                    {item}
+                                    {item.nome}
+                                </Text>
+
+                                <Text style={{ fontSize: 11, color: '#888' }}>
+                                    Final {item.ultimos_digitos}
                                 </Text>
                             </TouchableOpacity>
                         ))}
                     </ScrollView>
-                </>
+                </View>
             )}
 
             <TextInput
@@ -292,7 +382,7 @@ export default function Registro() {
             />
 
             <View style={styles.dateContainer}>
-                <Text style={styles.dateLabel}>Data do registro</Text>
+                <Text style={styles.dateLabel}>Data que será recebido ou pago</Text>
             
                 <Text style={styles.dateHint}>
                     Selecione quando esse lançamento aconteceu ou acontecerá.
@@ -451,6 +541,132 @@ export default function Registro() {
                     </View>
                 )}
             />
+
+            <Modal
+                visible={modalCartoesVisivel}
+                transparent={true}
+                animationType="slide"
+                onRequestClose={() => setModalCartoesVisivel(false)}
+            >
+                <View style={styles.modalFundo}>
+                    <View style={styles.modalContainer}>
+
+                        <View style={styles.modalCabecalho}>
+                            <Text style={styles.modalTitulo}>
+                                Meus cartões
+                            </Text>
+
+                            <TouchableOpacity
+                                onPress={() => setModalCartoesVisivel(false)}
+                            >
+                                <Ionicons
+                                    name="close"
+                                    size={26}
+                                    color="black"
+                                />
+                            </TouchableOpacity>
+                        </View>
+
+                        <TouchableOpacity
+                            style={styles.botaoAdicionarCartao}
+                            onPress={() =>
+                                setMostrarCadastroCartao(!mostrarCadastroCartao)
+                            }
+                        >
+                            <Ionicons name="add-circle-outline" size={20} color="black" />
+
+                            <Text style={styles.textoBotaoCartoes}>
+                                Adicionar cartão
+                            </Text>
+                        </TouchableOpacity>
+
+                        {mostrarCadastroCartao && (
+                            <View style={styles.formularioCartao}>
+
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Nome do cartão (Ex: Nubank)"
+                                    value={nomeCartao}
+                                    onChangeText={setNomeCartao}
+                                />
+
+                                <TextInput
+                                    style={styles.input}
+                                    placeholder="Últimos 4 dígitos"
+                                    keyboardType="numeric"
+                                    maxLength={4}
+                                    value={ultimosDigitos}
+                                    onChangeText={(texto) =>
+                                        setUltimosDigitos(
+                                            texto.replace(/\D/g, '').slice(0, 4)
+                                        )
+                                    }
+                                />
+
+                                <TouchableOpacity
+                                    style={styles.botao}
+                                    onPress={salvarCartao}
+                                >
+                                    <Text style={styles.textoBotao}>
+                                        Salvar cartão
+                                    </Text>
+                                </TouchableOpacity>
+
+                            </View>
+                        )}
+
+                        <Text style={styles.subtitulo}>
+                            Cartões cadastrados
+                        </Text>
+
+                        {cartoes.length === 0 ? (
+                            <Text style={styles.vazio}>
+                                Nenhum cartão cadastrado.
+                            </Text>
+                        ) : (
+                            <FlatList
+                                data={cartoes}
+                                keyExtractor={(item) => item.id}
+                                style={{ maxHeight: 300 }}
+                                renderItem={({ item }) => (
+                                    <View style={styles.cartaoItem}>
+
+                                        <View style={styles.cartaoInformacoes}>
+                                            <Ionicons
+                                                name="card-outline"
+                                                size={24}
+                                                color="black"
+                                            />
+
+                                            <View>
+                                                <Text style={styles.cartaoNome}>
+                                                    {item.nome}
+                                                </Text>
+
+                                                <Text style={styles.cartaoDigitos}>
+                                                    Final {item.ultimos_digitos}
+                                                </Text>
+                                            </View>
+                                        </View>
+
+                                        <TouchableOpacity
+                                            onPress={() => apagarCartao(item.id)}
+                                        >
+                                            <Ionicons
+                                                name="trash-outline"
+                                                size={21}
+                                                color="red"
+                                            />
+                                        </TouchableOpacity>
+
+                                    </View>
+                                )}
+                            />
+                        )}
+
+                    </View>
+                </View>
+            </Modal>
 
             <Text></Text>
             <Text></Text>
@@ -631,5 +847,97 @@ const styles = StyleSheet.create({
         color: 'black',
         fontSize: 16,
         fontWeight: '500',
+    },
+
+    botaoCartoes: {
+    backgroundColor: 'white',
+    borderWidth: 2,
+    borderColor: '#E0E0E0',
+    padding: 15,
+    borderRadius: 12,
+    marginBottom: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    },
+
+    textoBotaoCartoes: {
+        fontFamily: 'Inter_400Regular',
+        color: 'black',
+        fontSize: 15,
+        flex: 1,
+        marginLeft: 10,
+    },
+
+    modalFundo: {
+        flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        padding: 20,
+    },
+
+    modalContainer: {
+        width: '100%',
+        maxHeight: '80%',
+        backgroundColor: 'white',
+        borderRadius: 18,
+        padding: 20,
+    },
+
+    modalCabecalho: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 20,
+    },
+
+    modalTitulo: {
+        fontFamily: 'Inter_600SemiBold',
+        fontSize: 22,
+        color: 'black',
+    },
+
+    botaoAdicionarCartao: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderWidth: 2,
+        borderColor: '#E0E0E0',
+        borderRadius: 12,
+        padding: 14,
+        marginBottom: 15,
+    },
+
+    formularioCartao: {
+        marginBottom: 10,
+    },
+
+    cartaoItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        borderWidth: 2,
+        borderColor: '#E0E0E0',
+        borderRadius: 12,
+        padding: 15,
+        marginBottom: 10,
+    },
+
+    cartaoInformacoes: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 12,
+    },
+
+    cartaoNome: {
+        fontSize: 15,
+        fontWeight: '600',
+        color: 'black',
+    },
+
+    cartaoDigitos: {
+        fontSize: 13,
+        color: '#888',
+        marginTop: 3,
     },
 });
