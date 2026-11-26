@@ -2,7 +2,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-nati
 import { Feather, Entypo, MaterialIcons, Octicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import db from '../database/database';
-import { useState, useCallback, useContext } from 'react';
+import { useState, useCallback, useContext, useRef, useEffect  } from 'react';
 import { PeriodoContext } from '../PeriodoContext';
 
 
@@ -21,14 +21,44 @@ export default function Inicio() {
     const [saldo, setSaldo] = useState(0);
     const [despesasMes, setDespesasMes] = useState([]);
     const [gastosPorCartao, setGastosPorCartao] = useState([]);
+    const scrollMesesRef = useRef(null);
+    const [larguraLista, setLarguraLista] = useState(0);
+
+    useEffect(() => {
+        if (larguraLista > 0) {
+            const larguraBotao = 60;
+            const espacamento = 6;
+            const larguraMesAtivo = 70;
+
+            const posicaoMes =
+                10 + mesSelecionado * (larguraBotao + espacamento);
+
+            const centroMes = posicaoMes + larguraMesAtivo / 2;
+
+            const deslocamento = Math.max(
+                0,
+                centroMes - larguraLista / 2
+            );
+
+            scrollMesesRef.current?.scrollTo({
+                x: deslocamento,
+                animated: false,
+            });
+        }
+    }, [larguraLista, mesSelecionado]);
 
     function carregarDados(mes, ano) {
         const mesFormatado = String(mes + 1).padStart(2, '0');
         const periodo = `${ano}-${mesFormatado}`;
 
         const registros = db.getAllSync(
-            `SELECT * FROM registros
-            WHERE substr(data_registro, 1, 7) = ?`,
+            `SELECT registros.*, 
+                    cartoes.nome AS nome_cartao,
+                    cartoes.ultimos_digitos
+            FROM registros
+            LEFT JOIN cartoes
+            ON registros.cartao_id = cartoes.id
+            WHERE substr(registros.data_registro, 1, 7) = ?`,
             periodo
         );
 
@@ -97,9 +127,13 @@ export default function Inicio() {
             showsVerticalScrollIndicator={false}
         >
             <ScrollView
+                ref={scrollMesesRef}
                 horizontal
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.cardBotoes}
+                onLayout={(event) => {
+                    setLarguraLista(event.nativeEvent.layout.width);
+                }}
             >
                 {[
                     'Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun',
@@ -165,20 +199,58 @@ export default function Inicio() {
             </View>
 
             <View style={styles.card}>
-                <Text style={styles.titulo}>Gastos do mês</Text>
+                <Text style={styles.tituloAlt}>Gastos do mês</Text>
                 
                 {despesasMes.length > 0 ? (
                     despesasMes.map((item) => (
-                        <View key={item.id} style={styles.itemDespesa}>
-                            <Text style={styles.descricaoDespesa}>
-                                {item.descricao}
-                            </Text>
+                        <View
+                            key={item.id}
+                            style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                marginBottom: 16,
+                            }}
+                        >
+                            <View style={{ flex: 1, marginRight: 10 }}>
+                                <View style={{
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    flexWrap: 'wrap',
+                                    gap: 6,
+                                }}>
+                                    <Text style={styles.descricaoDespesa}>
+                                        {item.descricao}
+                                    </Text>
+
+                                    <Text style={{
+                                        fontSize: 10,
+                                        color: '#777',
+                                        backgroundColor: '#F0F0F0',
+                                        paddingHorizontal: 6,
+                                        paddingVertical: 3,
+                                        borderRadius: 5,
+                                    }}>
+                                        {item.nome_cartao
+                                            ? `${item.nome_cartao} •••• ${item.ultimos_digitos}`
+                                            : 'Sem cartão'}
+                                    </Text>
+
+                                    <Text style={{
+                                        fontSize: 11,
+                                        color: '#333',
+                                        marginTop: 4,
+                                    }}>
+                                        {item.data_registro
+                                            ? item.data_registro.split('-').reverse().join('/')
+                                            : 'Data não informada'}
+                                    </Text>
+
+                                </View>
+                            </View>
 
                             <Text style={styles.valorDespesa}>
-                                 {Number(item.valor).toLocaleString('pt-BR', {
-                                    style: 'currency',
-                                    currency: 'BRL'
-                                })}
+                                R$ {Number(item.valor).toFixed(2).replace('.', ',')}
                             </Text>
                         </View>
                     ))
@@ -339,6 +411,13 @@ const styles = StyleSheet.create({
         fontSize: 24,
     },
 
+    tituloAlt: {
+        fontFamily: 'Inter_600SemiBold',
+        color: 'black',
+        fontSize: 19,
+        paddingVertical: 8,
+    },
+
     texto: {
         fontFamily: 'Inter_500Medium',
         color: 'black',
@@ -349,5 +428,29 @@ const styles = StyleSheet.create({
         fontFamily: 'Inter_400Regular',
         color: '#828282',
         fontSize: 12,
+    },
+
+    categoriaDespesa: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#F0F0F0',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 5,
+    },
+
+    textoCategoria: {
+        fontSize: 11,
+        color: '#555',
+    },
+
+    infoCartao: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 5,
+    },
+
+    textoCartao: {
+        fontSize: 11,
+        color: '#888',
     },
 });

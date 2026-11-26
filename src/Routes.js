@@ -21,22 +21,24 @@ function Tabs() {
             initialRouteName='Inicio'
 
             screenOptions={({ navigation }) => ({
-                headerShadowVisible: true,
+                headerShadowVisible: false,
 
                 headerTitle: () => (
                     <Text style={{
-                        fontFamily: 'Inter_700Bold',    
-                        fontSize: 24,
+                        fontFamily: 'Inter_600SemiBold',    
+                        fontSize: 19,
+                        color: '#222',
+                        letterSpacing: 0.3,
                     }}>ExpoFinances</Text>
                 ),
 
                 headerTitleAlign: 'center',
 
                 headerStyle: {
-                    height: 75,
+                    height: 55,
                     backgroundColor: 'white',
-                    borderBottomWidth: 2,
-                    borderBottomColor: '#E0E0E0',
+                    borderBottomWidth: 1,
+                    borderBottomColor: '#f0f0f0',
                 },
 
                 tabBarActiveTintColor: 'black',

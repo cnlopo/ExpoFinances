@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext, useCallback } from 'react';
 import { View, Text, Modal, Platform, StyleSheet, TextInput, TouchableOpacity, FlatList, ScrollView, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import db from '../database/database';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { PeriodoContext } from '../PeriodoContext';
 
 export default function Registro() {
     const [descricao, setDescricao] = useState('');
@@ -18,14 +19,24 @@ export default function Registro() {
     const [mostrarCadastroCartao, setMostrarCadastroCartao] = useState(false);
     const [modalCartoesVisivel, setModalCartoesVisivel] = useState(false);
     const [cartaoSelecionado, setCartaoSelecionado] = useState(null);
+    const {mesSelecionado, anoSelecionado} = useContext(PeriodoContext);
+    const nomeMes = new Date(anoSelecionado, mesSelecionado).toLocaleDateString('pt-BR', {month: 'long', year: 'numeric'});
+    const mesAnoFormatado = nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1);
 
     function carregarRegistros() {
 
-        const resultado = db.getAllSync(
-            'SELECT * FROM registros'
-        );
+        const mesFormatado = String(mesSelecionado + 1).padStart(2, '0');
+        const periodo = `${anoSelecionado}-${mesFormatado}`;
 
-        setRegistros(resultado);
+        const registros = db.getAllSync(
+            `SELECT * FROM registros
+            WHERE substr(data_registro, 1, 7) = ?
+            ORDER BY data_registro DESC`,
+            periodo
+        );  
+
+        setRegistros(registros);
+
     }
 
     function carregarCartoes() {
@@ -90,7 +101,7 @@ export default function Registro() {
     useEffect(() => {
         carregarRegistros();
         carregarCartoes();
-    }, []);
+    }, [mesSelecionado, anoSelecionado]);
 
     function formatarMoeda(valor) {
         const numero = valor.replace(/\D/g, '');
@@ -156,6 +167,11 @@ export default function Registro() {
         setDescricao('');
         setValor('');
         setDataSelecionada(new Date());
+
+        Alert.alert(
+            'Sucesso!',
+            'Registro salvo!'
+        );
     }
 
     function apagarRegistro(id) {
@@ -233,6 +249,15 @@ export default function Registro() {
             0
         );
 
+    const categorias = [
+        { nome: 'Alimentação', icone: 'restaurant-outline' },
+        { nome: 'Transporte', icone: 'car-outline' },
+        { nome: 'Moradia', icone: 'home-outline' },
+        { nome: 'Saúde', icone: 'medkit-outline' },
+        { nome: 'Lazer', icone: 'game-controller-outline' },
+        { nome: 'Outros', icone: 'apps-outline' },
+    ];  
+
     return (
         <ScrollView
             style={styles.container}
@@ -252,50 +277,6 @@ export default function Registro() {
 
             </View>
 
-            <View style={styles.tiposContainer}>
-                <TouchableOpacity
-                    style={[
-                        styles.tipoBotao,
-                        tipo === 'receita' &&
-                        styles.tipoAtivo,
-                    ]}
-                    onPress={() => {
-                        setTipo('receita');
-                        setCartaoSelecionado(null);
-                    }}
-                >
-                    <Text style={styles.tipoTexto}>
-                        Receita
-                    </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    style={[
-                        styles.tipoBotao,
-                        tipo === 'fixo' &&
-                        styles.tipoAtivo,
-                    ]}
-                    onPress={() => setTipo('fixo')}
-                >
-                    <Text style={styles.tipoTexto}>
-                        Fixo
-                    </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    style={[
-                        styles.tipoBotao,
-                        tipo === 'variavel' &&
-                        styles.tipoAtivo,
-                    ]}
-                    onPress={() => setTipo('variavel')}
-                >
-                    <Text style={styles.tipoTexto}>
-                        Variável
-                    </Text>
-                </TouchableOpacity>
-            </View>
-
             <TouchableOpacity
                 style={styles.botaoCartoes}
                 onPress={() => {
@@ -311,6 +292,50 @@ export default function Registro() {
 
                 <Ionicons name="chevron-forward" size={20} color="#888" />
             </TouchableOpacity>
+
+            <View style={styles.tiposContainer}>
+                <TouchableOpacity
+                    style={[
+                        styles.tipoBotao,
+                        tipo === 'receita' &&
+                        styles.tipoAtivo,
+                    ]}
+                    onPress={() => {
+                        setTipo('receita');
+                        setCartaoSelecionado(null);
+                    }}
+                >
+                    <Text style={styles.tipoTexto}>
+                       + Receita
+                    </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={[
+                        styles.tipoBotao,
+                        tipo === 'fixo' &&
+                        styles.tipoAtivo,
+                    ]}
+                    onPress={() => setTipo('fixo')}
+                >
+                    <Text style={styles.tipoTexto}>
+                        Gasto Fixo
+                    </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                    style={[
+                        styles.tipoBotao,
+                        tipo === 'variavel' &&
+                        styles.tipoAtivo,
+                    ]}
+                    onPress={() => setTipo('variavel')}
+                >
+                    <Text style={styles.tipoTexto}>
+                        Gasto Variável
+                    </Text>
+                </TouchableOpacity>
+            </View>
 
             {tipo !== 'receita' && (
                 <View style={{ marginBottom: 15 }}>
@@ -381,12 +406,44 @@ export default function Registro() {
                 }
             />
 
+            {tipo !== 'receita' && (
+                <View style={{ marginBottom: 15 }}>
+                    <Text style={styles.subtitulo}>
+                        Categoria do gasto
+                    </Text>
+
+                    <View style={styles.categoriasContainer}>
+                        {categorias.map((item) => (
+                            <TouchableOpacity
+                                key={item.nome}
+                                style={[
+                                    styles.categoriaSelecionavel,
+                                    categoria === item.nome &&
+                                    styles.categoriaSelecionada,
+                                ]}
+                                onPress={() => setCategoria(item.nome)}
+                            >
+                                <Ionicons
+                                    name={item.icone}
+                                    size={20}
+                                    color={categoria === item.nome ? '#222' : '#777'}
+                                />
+
+                                <Text style={[
+                                    styles.textoCategoria,
+                                    categoria === item.nome &&
+                                    styles.textoCategoriaSelecionada,
+                                ]}>
+                                    {item.nome}
+                                </Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+                </View>
+            )}
+
             <View style={styles.dateContainer}>
                 <Text style={styles.dateLabel}>Data que será recebido ou pago</Text>
-            
-                <Text style={styles.dateHint}>
-                    Selecione quando esse lançamento aconteceu ou acontecerá.
-                </Text>
 
                 <TouchableOpacity
                     style={styles.dateInput}
@@ -436,6 +493,14 @@ export default function Registro() {
                 </Text>
             </TouchableOpacity>
 
+            <View style={{
+                height: 1,
+                backgroundColor: '#b6b6b6',
+                width: '100%',
+            }} />
+
+            <Text style={styles.subtitulo}>Receitas | {mesAnoFormatado}</Text>
+
             {receitasLista.length === 0 && (
                 <Text style={styles.vazio}>
                     Nenhuma receita
@@ -470,7 +535,14 @@ export default function Registro() {
                 )}
             />
 
-            <Text style={styles.subtitulo}>Gastos Fixos</Text>
+            <View style={{
+                height: 1,
+                backgroundColor: '#b6b6b6',
+                width: '60%',
+                alignSelf: "center"
+            }} />
+
+            <Text style={styles.subtitulo}>Gastos Fixos | {mesAnoFormatado}</Text>
 
             {gastosFixosLista.length === 0 && (
                 <Text style={styles.vazio}>Nenhum gasto fixo</Text>
@@ -504,8 +576,15 @@ export default function Registro() {
                 )}
             />
 
+            <View style={{
+                height: 1,
+                backgroundColor: '#b6b6b6',
+                width: '60%',
+                alignSelf: "center"
+            }} />
+
             <Text style={styles.subtitulo}>
-                Gastos Variáveis
+                Gastos Variáveis | {mesAnoFormatado}
             </Text>
 
             {gastosVariaveisLista.length === 0 && (
@@ -683,14 +762,16 @@ const styles = StyleSheet.create({
     },
 
     dateContainer: {
-        marginBottom: 15,
+        marginBottom: 20,
     },
 
     dateLabel: {
         fontSize: 15,
         fontWeight: '600',
-        color: '#333',
-        marginBottom: 5,
+        color: '#5b5a5a',
+        marginBottom: 10,
+        paddingTop: 15,
+        textAlign: "center",
     },
 
     dateHint: {
@@ -787,7 +868,7 @@ const styles = StyleSheet.create({
     tipoTexto: {
         fontFamily: 'Inter_400Regular',
         color: 'black',
-        fontSize: 14,
+        fontSize: 13,
     },
 
     input: {
@@ -800,7 +881,7 @@ const styles = StyleSheet.create({
     },
 
     botao: {
-        backgroundColor: 'white',
+        backgroundColor: 'rgb(217, 217, 217)',
         borderWidth: 2,
         borderColor: '#E0E0E0',
         padding: 18,
@@ -816,16 +897,18 @@ const styles = StyleSheet.create({
 
     subtitulo: {
         fontFamily: 'Inter_600SemiBold',
-        color: 'black',
-        fontSize: 22,
+        color: '#656464',
+        fontSize: 15,
         marginBottom: 10,
-        marginTop: 10,
+        marginTop: 20,
+        textAlign: "center",
     },
 
     vazio: {
         fontFamily: 'Inter_400Regular',
         color: 'black',
         marginBottom: 10,
+        textAlign: "center",
     },
 
     card: {
@@ -939,5 +1022,42 @@ const styles = StyleSheet.create({
         fontSize: 13,
         color: '#888',
         marginTop: 3,
+    },
+
+    categoriasContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    },
+
+    categoriaSelecionavel: {
+        width: '31%',
+        minHeight: 75,
+        backgroundColor: 'white',
+        borderWidth: 2,
+        borderColor: '#E0E0E0',
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 8,
+        marginBottom: 8,
+        gap: 5,
+    },
+
+    categoriaSelecionada: {
+        backgroundColor: '#F2F2F2',
+        borderColor: '#999',
+    },
+
+    textoCategoria: {
+        fontFamily: 'Inter_400Regular',
+        fontSize: 11,
+        color: '#777',
+        textAlign: 'center',
+    },
+
+    textoCategoriaSelecionada: {
+        color: 'black',
+        fontFamily: 'Inter_600SemiBold',
     },
 });
