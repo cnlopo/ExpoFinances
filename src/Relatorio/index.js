@@ -1,9 +1,10 @@
-import { Dimensions, View, Text, StyleSheet, ScrollView } from "react-native";
+import { Dimensions, View, Text, StyleSheet, ScrollView, Animated } from "react-native";
 import { PieChart } from "react-native-chart-kit";
 import { useFocusEffect } from '@react-navigation/native';
 import db from '../database/database';
-import { useState, useCallback, useContext } from 'react';
+import { useState, useCallback, useContext, useRef } from 'react';
 import { PeriodoContext } from '../PeriodoContext';
+import useAutoHideBars from '../hooks/useAutoHideBars';
 
 const nomesMeses = [
     'Janeiro',
@@ -38,6 +39,7 @@ export default function Grafico() {
     const [saude, setSaude] = useState(0);
     const [lazer, setLazer] = useState(0);
     const [outros, setOutros] = useState(0);
+    const controlarBarras = useAutoHideBars();
 
     function carregarDados() {
 
@@ -54,7 +56,7 @@ export default function Grafico() {
             item =>
                 item.tipo === 'fixo' ||
                 item.tipo === 'variavel'
-            );
+        );
 
         setAlimentacao(
             gastos
@@ -202,74 +204,77 @@ export default function Grafico() {
     ];
 
     return (
-        <ScrollView>
-            <View style={styles.container}>
+        <ScrollView
+            style={styles.container}
+            showsVerticalScrollIndicator={false}
+            onScroll={controlarBarras}
+            scrollEventThrottle={16}
+        >
 
-                <View style={styles.cabecalhoRelatorio}>
-                    <Text style={styles.tituloRelatorio}>
-                        Relatório Financeiro
-                    </Text>
+            <View style={styles.cabecalhoRelatorio}>
+                <Text style={styles.tituloRelatorio}>
+                    Relatório Financeiro
+                </Text>
 
-                    <Text style={styles.subtituloRelatorio}>
-                        {nomeMes} de {anoSelecionado}
-                    </Text>
-                </View>
-
-
-                <View style={styles.card}>
-                    <Text style={styles.titulo}>Distribuição da Renda</Text>
-
-                    <PieChart
-                        data={datagrafico1}
-                        width={Dimensions.get("window").width - 40}
-                        height={150}
-                        chartConfig={{
-                            color: () => "#000",
-                        }}
-                        accessor={"population"}
-                        backgroundColor={"transparent"}
-                        hasLegend={true}
-                    />
-                </View>
-
-                <View style={styles.card}>
-                    <Text style={styles.titulo}>Saídas por Categorias</Text>
-
-                    <PieChart
-                        data={datagrafico2}
-                        width={Dimensions.get("window").width - 40}
-                        height={150}
-                        chartConfig={{
-                            color: () => "#000",
-                        }}
-                        accessor={"population"}
-                        backgroundColor={"transparent"}
-                        hasLegend={true}
-                    />
-                </View>
-
-                <View style={styles.card}>
-                    <Text style={styles.titulo}>Fluxo Financeiro</Text>
-
-                    <PieChart
-                        data={datagrafico3}
-                        width={Dimensions.get("window").width - 40}
-                        height={140}
-                        chartConfig={{
-                            color: () => "#000",
-                        }}
-                        accessor={"valor"}
-                        backgroundColor={"transparent"}
-                        paddingLeft={"15"}
-                        hasLegend={true}
-                    />
-                </View>
-
-                <Text></Text>
-                <Text></Text>
+                <Text style={styles.subtituloRelatorio}>
+                    {nomeMes} de {anoSelecionado}
+                </Text>
             </View>
+
+
+            <View style={styles.card}>
+                <Text style={styles.titulo}>Distribuição da Renda</Text>
+
+                <PieChart
+                    data={datagrafico1}
+                    width={Dimensions.get("window").width - 40}
+                    height={150}
+                    chartConfig={{
+                        color: () => "#000",
+                    }}
+                    accessor={"population"}
+                    backgroundColor={"transparent"}
+                    hasLegend={true}
+                />
+            </View>
+
+            <View style={styles.card}>
+                <Text style={styles.titulo}>Saídas por Categorias</Text>
+
+                <PieChart
+                    data={datagrafico2}
+                    width={Dimensions.get("window").width - 40}
+                    height={150}
+                    chartConfig={{
+                        color: () => "#000",
+                    }}
+                    accessor={"population"}
+                    backgroundColor={"transparent"}
+                    hasLegend={true}
+                />
+            </View>
+
+            <View style={styles.card}>
+                <Text style={styles.titulo}>Fluxo Financeiro</Text>
+
+                <PieChart
+                    data={datagrafico3}
+                    width={Dimensions.get("window").width - 40}
+                    height={140}
+                    chartConfig={{
+                        color: () => "#000",
+                    }}
+                    accessor={"valor"}
+                    backgroundColor={"transparent"}
+                    paddingLeft={"15"}
+                    hasLegend={true}
+                />
+            </View>
+
+            <Text></Text>
+            <Text></Text>
             
-        </ScrollView>
+        </ScrollView >
         
     );
 }

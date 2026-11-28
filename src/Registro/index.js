@@ -1,9 +1,12 @@
-import { useState, useEffect, useContext, useCallback } from 'react';
-import { View, Text, Modal, Platform, StyleSheet, TextInput, TouchableOpacity, FlatList, ScrollView, Alert } from 'react-native';
+import { useState, useEffect, useContext } from 'react';
+import { View, Text, Modal, Platform, StyleSheet, TextInput, TouchableOpacity, FlatList, Alert, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import db from '../database/database';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { PeriodoContext } from '../PeriodoContext';
+import useAutoHideBars from '../hooks/useAutoHideBars';
+
+
 
 export default function Registro() {
     const [descricao, setDescricao] = useState('');
@@ -22,6 +25,7 @@ export default function Registro() {
     const {mesSelecionado, anoSelecionado} = useContext(PeriodoContext);
     const nomeMes = new Date(anoSelecionado, mesSelecionado).toLocaleDateString('pt-BR', {month: 'long', year: 'numeric'});
     const mesAnoFormatado = nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1);
+    const controlarBarras = useAutoHideBars();
 
     function carregarRegistros() {
 
@@ -262,10 +266,12 @@ export default function Registro() {
         <ScrollView
             style={styles.container}
             showsVerticalScrollIndicator={false}
+            onScroll={controlarBarras}
+            scrollEventThrottle={16}
         >
-            <Text style={styles.titulo}>Resumo</Text>
 
             <View style={styles.resumo}>
+                <Text style={styles.tituloAlt}>Registros | {mesAnoFormatado}</Text>
                 <Text style={styles.resumoTexto}>Receita:</Text>
                 <Text style={styles.resumoRS}>R${receita.toFixed(2)}</Text>
 
@@ -801,9 +807,18 @@ const styles = StyleSheet.create({
     titulo: {
         fontFamily: 'Inter_600SemiBold',
         color: 'black',
-        fontSize: 25,
+        fontSize: 22,
         fontWeight: 'bold',
         marginBottom: 20,
+    },
+
+    tituloAlt: {
+        fontFamily: 'Inter_600SemiBold',
+        color: '#999',
+        fontSize: 18,
+        fontWeight: 'bold',
+        marginBottom: 20,
+        textAlign: "center",
     },
 
     resumo: {

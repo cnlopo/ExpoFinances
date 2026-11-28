@@ -4,6 +4,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import db from '../database/database';
 import { useState, useCallback, useContext, useRef, useEffect  } from 'react';
 import { PeriodoContext } from '../PeriodoContext';
+import useAutoHideBars from '../hooks/useAutoHideBars';
 
 
 export default function Inicio() {
@@ -14,7 +15,6 @@ export default function Inicio() {
         anoSelecionado,
         setAnoSelecionado
     } = useContext(PeriodoContext);
-
     const [receitas, setReceitas] = useState(0);
     const [gastosFixos, setGastosFixos] = useState(0);
     const [gastosVariaveis, setGastosVariaveis] = useState(0);
@@ -23,6 +23,7 @@ export default function Inicio() {
     const [gastosPorCartao, setGastosPorCartao] = useState([]);
     const scrollMesesRef = useRef(null);
     const [larguraLista, setLarguraLista] = useState(0);
+    const controlarBarras = useAutoHideBars();
 
     useEffect(() => {
         if (larguraLista > 0) {
@@ -124,7 +125,13 @@ export default function Inicio() {
     return (
         <ScrollView
             style={styles.container}
+            contentContainerStyle={{
+                paddingTop: 25,
+                paddingBottom: 40,
+            }}
             showsVerticalScrollIndicator={false}
+            onScroll={controlarBarras}
+            scrollEventThrottle={16}
         >
             <ScrollView
                 ref={scrollMesesRef}
